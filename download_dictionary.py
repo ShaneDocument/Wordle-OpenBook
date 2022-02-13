@@ -1,9 +1,18 @@
+# Dependency
 # pip3 install BeautifulSoup
 # pip3 install lxml
+# pip3 install nltk
+# then
+# python3
+# import nltk
+# nltk.download("words")
+
 from bs4 import BeautifulSoup
 import requests
 import multiprocessing
 import sys
+import enchant
+from nltk.corpus import words
 
 url_dictionary = "https://www.englishtools.org/en/find-english-words-by-length/any"
 def visit_website(url): # It will return BeautifulSoup
@@ -17,14 +26,16 @@ def visit_website(url): # It will return BeautifulSoup
 
 def download_words(word_pool, word_len, page):
     print(f"Downloading... Word length: {word_len}, Page: {page}")
+    d = enchant.Dict("en_US")
     url = url_dictionary + f"/{word_len}/{page}"
     soup = visit_website(url)
-    words = soup.find_all('td')
-    for word in words:
+    words_list = soup.find_all('td')
+    for word in words_list:
         if word.text == "No results found.":
             print("Finish Downloading the words.")
             return 
-        word_pool.append(word.text)
+        if d.check(word.text):
+            word_pool.append(word.text)
 def get_word_pool(word_len):
     url = url_dictionary + f"/{word_len}/1"
     word_pool = multiprocessing.Manager().list()
